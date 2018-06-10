@@ -36,5 +36,7 @@ function Connect-Cohesity {
   }
   
   end {
+    Remove-Variable $networkCredential
+    Remove-Variable $RequestArguemnts
   }
 }
