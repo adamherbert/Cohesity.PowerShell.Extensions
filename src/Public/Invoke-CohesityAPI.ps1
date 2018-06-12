@@ -22,7 +22,6 @@ function Invoke-CohesityAPI {
   begin {
     # Set minimum required headers
     $RequestHeaders['accept'] = 'application/json'
-    $RequestHeaders['content-type'] = 'application/json'
 
     # Validate that we have a target VIP
     if ([string]::IsNullOrEmpty($script:CohesityVIP)) {
@@ -30,24 +29,27 @@ function Invoke-CohesityAPI {
     }
         
     # Validate that we are logged in or that a login call is being made
-    if ($Method -ieq 'post' -and $URI -match 'accessTokens') {
-      continue
+    if ($RequestMethod -ieq 'post' -and $RequestTarget -match 'accessTokens') {
+      # This is 
     }
     elseif ([string]::IsNullOrEmpty($script:CohesityToken)) {
       Write-Error 'Please authenticate before making any Cohesity API calls!'
+    }
+    else {
+      $RequestHeaders['Authorization'] = "$($script:CohesityTokenType) $($script:CohesityToken)"
     }
   }
   
   process {
     # Create full URI based on RequestTarget
-    $uri = "https://$($script:CohesityVIP)/irisservices/api/v1"
+    $uri = "https://$($script:CohesityVIP)"
     if ($RequestTarget -notmatch "/") {
       $RequestTarget = "/public/$RequestTarget"
     }
-    [string]$uri = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$uri),$RequestTarget).AbsoluteUri
+    [string]$uri = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$uri),("/irisservices/api/v1" + $RequestTarget)).AbsoluteUri
 
     # If RequestMethod is GET then put parameters on URI
-    if ( $Method -ieq 'get' ) {
+    if ( $RequestMethod -ieq 'get' ) {
       if ($RequestArguments.Count -gt 0) {
         $uri += '?'
         $uri += [string]::join("&", @(
@@ -70,20 +72,22 @@ function Invoke-CohesityAPI {
     }
     # All other request methods will send a JSON payload
     else {
+      $body = $RequestArguments | ConvertTo-Json -Depth 100
       try {
         $result = Invoke-RestMethod `
+          -Method $RequestMethod `
+          -Headers $RequestHeaders `
           -SkipCertificateCheck:$true `
           -ContentType 'application/json' `
-          -Headers $RequestHeaders `
           -Uri $uri `
-          -Body ($RequestArguments | ConvertTo-Json -Depth 100)
+          -Body $body
       }
       catch {
         Write-Error $_.Exception.Message
       }
     }
 
-    Write-Output $result | Format-List
+    Return $result
   }
   
   end {

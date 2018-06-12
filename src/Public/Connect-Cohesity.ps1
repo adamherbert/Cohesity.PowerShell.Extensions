@@ -2,11 +2,11 @@ function Connect-Cohesity {
   [CmdletBinding()]
   param (
     # Cohesity Virtual IP (VIP)
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]
     $CohesityVIP,
     # Credentials
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [pscredential]
     $Credential
   )
@@ -17,26 +17,35 @@ function Connect-Cohesity {
         -Message "Please provide username and password for Cohesity VIP ($CohesityVIP)" `
         -Title "Cohesity Login to $CohesityVIP" 
     }
+    $script:CohesityVIP = $CohesityVIP
   }
   
   process {
     $networkCredential = $Credential.GetNetworkCredential()
 
     $RequestArguemnts = @{
-      'domain' = $networkCredential.Domain
+      'domain'   = $networkCredential.Domain
       'username' = $networkCredential.UserName
       'password' = $networkCredential.Password
     }
 
-    Invoke-CohesityAPI `
-      -RequestTarget 'accessTokens' `
-      -RequestMethod 'POST' `
-      -RequestArguments $RequestArguemnts
-      -ErrorAction 'Stop'
+    try {
+      $result = Invoke-CohesityAPI `
+        -RequestTarget 'accessTokens' `
+        -RequestMethod 'POST' `
+        -RequestArguments $RequestArguemnts `
+        -ErrorAction 'Stop'
+    }
+    catch {
+      Write-Error $_.Exception.Message
+    }
+
+    $script:CohesityTokenType = $result.tokenType
+    $script:CohesityToken = $result.accessToken
   }
   
   end {
-    Remove-Variable $networkCredential
-    Remove-Variable $RequestArguemnts
+      Remove-Variable $networkCredential -ErrorAction SilentlyContinue
+      Remove-Variable $RequestArguemnts -ErrorAction SilentlyContinue
   }
 }
