@@ -42,6 +42,8 @@ function Connect-Cohesity {
 
     $script:CohesityTokenType = $result.tokenType
     $script:CohesityToken = $result.accessToken
+
+    Invoke-CohesityAPI -RequestMethod "GET" -RequestTarget "basicClusterInfo"
   }
   
   end {

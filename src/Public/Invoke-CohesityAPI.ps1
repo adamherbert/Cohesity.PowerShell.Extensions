@@ -43,9 +43,11 @@ function Invoke-CohesityAPI {
   process {
     # Create full URI based on RequestTarget
     $uri = "https://$($script:CohesityVIP)"
-    if ($RequestTarget -notmatch "/") {
+    # If requestTarget starts with a "/" then use it verbatim otherwise prefix with public
+    if ($RequestTarget[0] -ne "/") {
       $RequestTarget = "/public/$RequestTarget"
     }
+    # Assemble the complete URI for the short resource name
     [string]$uri = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$uri),("/irisservices/api/v1" + $RequestTarget)).AbsoluteUri
 
     # If RequestMethod is GET then put parameters on URI
@@ -61,6 +63,7 @@ function Invoke-CohesityAPI {
       }
       try {
         $result = Invoke-RestMethod `
+          -Method 'GET' `
           -SkipCertificateCheck:$true `
           -ContentType 'application/json' `
           -Headers $RequestHeaders `
