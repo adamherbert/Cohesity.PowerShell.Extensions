@@ -10,10 +10,10 @@ function ConvertFrom-EncryptedString {
     [string]
     $EncryptedText
   )
-  
+
   begin {
   }
-  
+
   process {
     $bytes = [System.Convert]::FromBase64String($EncryptedText)
     $InitializationVector = $bytes[0..15]
@@ -23,7 +23,7 @@ function ConvertFrom-EncryptedString {
     $aesManaged.Dispose()
     Return [System.Text.Encoding]::UTF8.GetString($unencryptedData).Trim([char]0)
   }
-  
+
   end {
   }
 }

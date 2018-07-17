@@ -14,10 +14,10 @@ function New-AesManagedObject {
     [switch]
     $NewKey
   )
-  
+
   begin {
   }
-  
+
   process {
     $aesManaged = New-Object "System.Security.Cryptography.AesManaged"
     $aesManaged.Mode = [System.Security.Cryptography.CipherMode]::CBC
@@ -28,7 +28,7 @@ function New-AesManagedObject {
       $aesManaged.GenerateKey()
       Return [System.Convert]::ToBase64String($aesManaged.Key)
     }
-    else { 
+    else {
       if ($InitializationVector) {
         $aesManaged.IV = $InitializationVector
       }
@@ -36,7 +36,7 @@ function New-AesManagedObject {
       Return $aesManaged
     }
   }
-  
+
   end {
   }
 }

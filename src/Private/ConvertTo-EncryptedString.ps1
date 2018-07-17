@@ -10,10 +10,10 @@ function ConvertTo-EncryptedString {
     [string]
     $PlainText
   )
-  
+
   begin {
   }
-  
+
   process {
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($PlainText)
     $aesManaged = New-AesManagedObject -EncryptionKey $EncryptionKey
@@ -23,7 +23,7 @@ function ConvertTo-EncryptedString {
     $aesManaged.Dispose()
     Return [System.Convert]::ToBase64String($fullData)
   }
-  
+
   end {
   }
 }
