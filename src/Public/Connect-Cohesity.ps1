@@ -10,16 +10,16 @@ function Connect-Cohesity {
     [pscredential]
     $Credential
   )
-  
+
   begin {
     if (-not $Credential) {
       $Credential = Get-Credential `
         -Message "Please provide username and password for Cohesity VIP ($CohesityVIP)" `
-        -Title "Cohesity Login to $CohesityVIP" 
+        -Title "Cohesity Login to $CohesityVIP"
     }
     $script:CohesityVIP = $CohesityVIP
   }
-  
+
   process {
     $networkCredential = $Credential.GetNetworkCredential()
 
@@ -45,7 +45,7 @@ function Connect-Cohesity {
 
     Invoke-CohesityAPI -RequestMethod "GET" -RequestTarget "basicClusterInfo"
   }
-  
+
   end {
       Remove-Variable $networkCredential -ErrorAction SilentlyContinue
       Remove-Variable $RequestArguemnts -ErrorAction SilentlyContinue
