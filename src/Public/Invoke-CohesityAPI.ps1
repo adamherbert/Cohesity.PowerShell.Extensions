@@ -18,7 +18,7 @@ function Invoke-CohesityAPI {
     [Parameter(Mandatory = $false)]
     [hashtable]$RequestHeaders = @{}
   )
-  
+
   begin {
     # Set minimum required headers
     $RequestHeaders['accept'] = 'application/json'
@@ -27,10 +27,12 @@ function Invoke-CohesityAPI {
     if ([string]::IsNullOrEmpty($script:CohesityVIP)) {
       Write-Error 'Please provide Cohesity VIP before API calls!'
     }
-        
+
     # Validate that we are logged in or that a login call is being made
     if ($RequestMethod -ieq 'post' -and $RequestTarget -match 'accessTokens') {
-      # This is 
+      # Remove saved token information if logging in again
+      Remove-Variable -Scope "script" -Name "CohesityTokenType" -ErrorAction SilentlyContinue
+      Remove-Variable -Scope "script" -Name "CohesityToken" -ErrorAction SilentlyContinue
     }
     elseif ([string]::IsNullOrEmpty($script:CohesityToken)) {
       Write-Error 'Please authenticate before making any Cohesity API calls!'
@@ -39,7 +41,7 @@ function Invoke-CohesityAPI {
       $RequestHeaders['Authorization'] = "$($script:CohesityTokenType) $($script:CohesityToken)"
     }
   }
-  
+
   process {
     # Create full URI based on RequestTarget
     $uri = "https://$($script:CohesityVIP)"
@@ -55,10 +57,10 @@ function Invoke-CohesityAPI {
       if ($RequestArguments.Count -gt 0) {
         $uri += '?'
         $uri += [string]::join("&", @(
-            foreach ($pair in $RequestArguments.GetEnumerator()) { 
-              if ($pair.Name) { 
-                $pair.Name + '=' + $pair.Value 
-              } 
+            foreach ($pair in $RequestArguments.GetEnumerator()) {
+              if ($pair.Name) {
+                $pair.Name + '=' + $pair.Value
+              }
             }))
       }
       try {
@@ -92,7 +94,7 @@ function Invoke-CohesityAPI {
 
     Return $result
   }
-  
+
   end {
   }
 }
