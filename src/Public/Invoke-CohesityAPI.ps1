@@ -24,22 +24,11 @@ function Invoke-CohesityAPI {
     $RequestHeaders['accept'] = 'application/json'
 
     # Validate that we have a target VIP
-    if ([string]::IsNullOrEmpty($script:CohesityVIP)) {
-      Write-Error 'Please provide Cohesity VIP before API calls!'
+    if ([string]::IsNullOrEmpty($Session) -or $Session.ApiClient.IsAuthenticated -eq $false) {
+      Write-Error "Failed to authenticate. Please connect to the Cohesity Cluster using 'Connect-CohesityCluster'"
     }
 
-    # Validate that we are logged in or that a login call is being made
-    if ($RequestMethod -ieq 'post' -and $RequestTarget -match 'accessTokens') {
-      # Remove saved token information if logging in again
-      Remove-Variable -Scope "script" -Name "CohesityTokenType" -ErrorAction SilentlyContinue
-      Remove-Variable -Scope "script" -Name "CohesityToken" -ErrorAction SilentlyContinue
-    }
-    elseif ([string]::IsNullOrEmpty($script:CohesityToken)) {
-      Write-Error 'Please authenticate before making any Cohesity API calls!'
-    }
-    else {
-      $RequestHeaders['Authorization'] = "$($script:CohesityTokenType) $($script:CohesityToken)"
-    }
+    $RequestHeaders['Authorization'] = "$($Session.ApiClient.AccessToken.TokenType) $($Session.ApiClient.AccessToken.AccessToken)"
   }
 
   process {
@@ -47,11 +36,14 @@ function Invoke-CohesityAPI {
     $uri = "https://$($script:CohesityVIP)"
     # If requestTarget starts with a "/" then use it verbatim otherwise prefix with public
     if ($RequestTarget[0] -ne "/") {
-      $RequestTarget = "/public/$RequestTarget"
+      $RequestTarget = "public/$RequestTarget"
+    }
+    else {
+      $RequestTarget = $RequestTarget[1..-1]
     }
     # Assemble the complete URI for the short resource name
-    [string]$uri = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$uri),("/irisservices/api/v1" + $RequestTarget)).AbsoluteUri
 
+    [string]$uri = (New-Object -TypeName 'System.Uri' -ArgumentList $Session.ApiClient.HttpClient.BaseAddress, $RequestTarget).ToString()
     # If RequestMethod is GET then put parameters on URI
     if ( $RequestMethod -ieq 'get' ) {
       if ($RequestArguments.Count -gt 0) {
@@ -66,7 +58,6 @@ function Invoke-CohesityAPI {
       try {
         $result = Invoke-RestMethod `
           -Method 'GET' `
-          -SkipCertificateCheck:$true `
           -ContentType 'application/json' `
           -Headers $RequestHeaders `
           -Uri $uri
@@ -82,7 +73,6 @@ function Invoke-CohesityAPI {
         $result = Invoke-RestMethod `
           -Method $RequestMethod `
           -Headers $RequestHeaders `
-          -SkipCertificateCheck:$true `
           -ContentType 'application/json' `
           -Uri $uri `
           -Body $body

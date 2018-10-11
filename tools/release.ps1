@@ -67,7 +67,7 @@ $manifestCmd = @"
 New-ModuleManifest ``
     -Path "$manifestFileName" ``
     -ModuleVersion "$ModuleVersion" ``
-    -Guid "$guid" ``
+    -Guid "$($variables.guid)" ``
     -Author "$($variables.author)" ``
     -CompanyName "$($variables.companyName)" ``
     -Copyright "(c) $((Get-Date).Year) $($variables.companyName). All rights reserved." ``

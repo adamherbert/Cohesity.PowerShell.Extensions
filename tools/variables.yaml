@@ -1,7 +1,7 @@
-projectName: CohesityPowerShellToolKit
-companyName: Cohesity
-manifestOptions: 
+projectName: Cohesity.PowerShell.Extensions
 version: 0.1
 guid: 178c8894-2c3a-4db4-be0f-f24a4d4285be
-author: Adam Herbert
+author: Adam Herbert <aherbert@cohesity.com>
+manifestOptions: 
+companyName: Cohesity
 
