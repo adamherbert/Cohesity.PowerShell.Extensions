@@ -25,7 +25,7 @@ function Get-CohesityStorageDomainPairs {
         ForEach ($RemoteStorageDomain in $RemoteStorageDomainList) {
             ForEach ($LocalStorageDomain in $LocalStorageDomainList) {
                 if ($LocalStorageDomain.Name -eq $RemoteStorageDomain.Name) {
-                    $StorageDomainPairs.Add(@{
+                    $StorageDomainPairs.Add([PSCustomObject]@{
                         "LocalStorageDomainId"    = $LocalStorageDomain.Id;
                         "LocalStorageDomainName"  = $LocalStorageDomain.Name;
                         "RemoteStorageDomainId"   = $RemoteStorageDomain.Id;
